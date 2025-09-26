@@ -151,6 +151,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (profileIndex !== -1) {
         profiles[profileIndex] = updatedProfile;
       }
+      
+      const userIndex = users.findIndex(u => u.id === updatedProfile.userId);
+      if (userIndex !== -1 && updatedProfile.avatar) {
+        users[userIndex].avatar = updatedProfile.avatar;
+      }
     }
   };
 
@@ -184,3 +189,5 @@ export function useAuth() {
   }
   return context;
 }
+
+    

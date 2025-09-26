@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Edit3, Mail, Phone, MapPin, Calendar, Plus, Grid3X3, LogIn, Eye, Trash2, Globe, Lock, Heart, User, Save, X, AlertTriangle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +32,7 @@ export default function ProfilePage() {
   const [editedBio, setEditedBio] = useState(profile?.bio || '');
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [portfolioToDelete, setPortfolioToDelete] = useState<Portfolio | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     if (!user) {
@@ -100,6 +101,23 @@ export default function ProfilePage() {
     setIsEditingBio(false);
   }
 
+  const handleAvatarEditClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && profile) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newAvatar = e.target?.result as string;
+        updateProfile({ ...profile, avatar: newAvatar });
+        toast({ title: 'Avatar Updated', description: 'Your profile picture has been changed.' });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -110,7 +128,14 @@ export default function ProfilePage() {
                 <AvatarImage src={profile.avatar || undefined} alt={profile.name} />
                 <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <Button size="icon" className="absolute bottom-0 right-0 h-8 w-8 rounded-full">
+              <input 
+                type="file" 
+                ref={avatarInputRef} 
+                onChange={handleAvatarChange}
+                className="hidden"
+                accept="image/*"
+              />
+              <Button size="icon" className="absolute bottom-0 right-0 h-8 w-8 rounded-full" onClick={handleAvatarEditClick}>
                 <Edit3 className="w-4 h-4" />
               </Button>
             </div>
@@ -258,3 +283,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
