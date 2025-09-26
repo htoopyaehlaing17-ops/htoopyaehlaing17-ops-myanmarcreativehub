@@ -1,3 +1,70 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "brand-identity-cover",
+      "description": "Cover image for a tech startup brand identity project",
+      "imageUrl": "https://images.unsplash.com/photo-1618249807726-2f381c277de1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxicmFuZCUyMGlkZW50aXR5fGVufDB8fHx8MTc1ODg3NzA2MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "brand identity"
+    },
+    {
+      "id": "brand-identity-img1",
+      "description": "Logo variations for the tech startup",
+      "imageUrl": "https://images.unsplash.com/photo-1730692504999-a20e4de60d31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxsb2dvJTIwdmFyaWF0aW9uc3xlbnwwfHx8fDE3NTg4ODAwMTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "logo variations"
+    },
+    {
+      "id": "brand-identity-img2",
+      "description": "Color palette for the tech startup",
+      "imageUrl": "https://images.unsplash.com/photo-1608231261603-42c08866e163?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb2xvciUyMHBhbGV0dGV8ZW58MHx8fHwxNzU4ODcyNDQxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "color palette"
+    },
+    {
+      "id": "brand-identity-img3",
+      "description": "Typography for the tech startup",
+      "imageUrl": "https://images.unsplash.com/photo-1533226458520-6f71cffeaa6a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0eXBvZ3JhcGh5fGVufDB8fHx8MTc1ODg4MDAxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "typography"
+    },
+    {
+      "id": "brand-identity-img4",
+      "description": "Business cards for the tech startup",
+      "imageUrl": "https://images.unsplash.com/photo-1718670013988-c6e3edb92345?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxidXNpbmVzcyUyMGNhcmRzfGVufDB8fHx8MTc1ODg3OTIxM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "business cards"
+    },
+    {
+      "id": "mobile-app-ui-cover",
+      "description": "Cover image for a mobile app UI design project",
+      "imageUrl": "https://images.unsplash.com/photo-1601972599720-36938d4ecd31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtb2JpbGUlMjBhcHB8ZW58MHx8fHwxNzU4ODAzMzIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mobile app"
+    },
+    {
+      "id": "mobile-app-ui-img1",
+      "description": "Dashboard screen for fitness app",
+      "imageUrl": "https://images.unsplash.com/photo-1683200899447-d398198ed197?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkYXNoYm9hcmQlMjBzY3JlZW58ZW58MHx8fHwxNzU4Nzk3MDczfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dashboard screen"
+    },
+    {
+      "id": "mobile-app-ui-img2",
+      "description": "Workout tracking screen for fitness app",
+      "imageUrl": "https://images.unsplash.com/photo-1758521961069-a1279f11c28d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3b3Jrb3V0JTIwdHJhY2tpbmd8ZW58MHx8fHwxNzU4ODExOTQ3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "workout tracking"
+    },
+    {
+      "id": "mobile-app-ui-img3",
+      "description": "Profile screen for fitness app",
+      "imageUrl": "https://images.unsplash.com/photo-1681398836231-d0b89bd571d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwcm9maWxlJTIwc2NyZWVufGVufDB8fHx8MTc1ODg4MDAxOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile screen"
+    },
+    {
+      "id": "guest-avatar",
+      "description": "Default avatar for guest users",
+      "imageUrl": "https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx1c2VyJTIwYXZhdGFyfGVufDB8fHx8MTc1ODgyNTEyMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "user avatar"
+    },
+    {
+      "id": "aung-myat-avatar",
+      "description": "Avatar for user Aung Myat",
+      "imageUrl": "https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx1c2VyJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzU4ODgwMDE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "user portrait"
+    }
+  ]
 }
