@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, UploadCloud } from 'lucide-react';
+import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import { PORTFOLIO_CATEGORIES } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
 import { suggestCoverImages } from '@/ai/flows/suggest-cover-images-from-description';
@@ -23,13 +23,20 @@ const portfolioSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long'),
   description: z.string().min(10, 'Description must be at least 10 characters long'),
   category: z.string().min(1, 'Please select a category'),
-  coverImage: z.string().url('Please provide a valid cover image URL'),
-  images: z.string().optional(),
+  coverImage: z.string().min(1, 'Please upload a cover image.'),
+  images: z.array(z.string()).optional(),
   isPublic: z.boolean().default(true),
   featured: z.boolean().default(false),
 });
 
 type PortfolioFormData = z.infer<typeof portfolioSchema>;
+
+const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+});
 
 export default function UploadPortfolioModal() {
   const { activeModal, closeModal } = useApp();
@@ -37,6 +44,9 @@ export default function UploadPortfolioModal() {
   const { toast } = useToast();
   const [suggestedImages, setSuggestedImages] = useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
 
   const {
     control,
@@ -51,7 +61,7 @@ export default function UploadPortfolioModal() {
       description: '',
       category: '',
       coverImage: '',
-      images: '',
+      images: [],
       isPublic: true,
       featured: false,
     },
@@ -60,10 +70,11 @@ export default function UploadPortfolioModal() {
   const descriptionValue = watch('description');
 
   const onSubmit = (data: PortfolioFormData) => {
-    const images = data.images ? data.images.split(',').map(url => url.trim()).filter(url => url) : [];
-    addPortfolio({ ...data, images });
+    addPortfolio({ ...data, images: data.images || [] });
     toast({ title: 'Project Added!', description: 'Your new project has been added to your portfolio.' });
     closeModal();
+    setCoverPreview(null);
+    setImagePreviews([]);
   };
   
   const handleSuggestImages = async () => {
@@ -87,6 +98,26 @@ export default function UploadPortfolioModal() {
       setIsSuggesting(false);
     }
   };
+
+  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const dataUri = await toBase64(file);
+      setValue('coverImage', dataUri);
+      setCoverPreview(dataUri);
+    }
+  };
+  
+  const handleProjectImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      const dataUris = await Promise.all(fileArray.map(file => toBase64(file)));
+      setValue('images', dataUris);
+      setImagePreviews(dataUris);
+    }
+  };
+
 
   if (activeModal !== 'uploadPortfolio') return null;
 
@@ -148,23 +179,27 @@ export default function UploadPortfolioModal() {
                 <div className="flex items-center justify-between">
                     <div>
                         <Label htmlFor="coverImage">Cover Image</Label>
-                        <p className="text-xs text-muted-foreground">Provide a URL or let AI suggest one.</p>
+                        <p className="text-xs text-muted-foreground">Upload an image or let AI suggest one.</p>
                     </div>
                     <Button type="button" onClick={handleSuggestImages} disabled={isSuggesting} size="sm">
                       {isSuggesting ? 'Thinking...' : 'Suggest with AI'}
                     </Button>
                 </div>
-                 <Controller
-                    name="coverImage"
-                    control={control}
-                    render={({ field }) => <Input id="coverImage" placeholder="https://example.com/image.png" {...field} />}
-                  />
+                 <Input id="coverImage" type="file" accept="image/*" onChange={handleCoverImageUpload} className="hidden" />
+                 <label htmlFor="coverImage" className="cursor-pointer border-2 border-dashed border-muted hover:border-primary rounded-lg p-6 flex flex-col items-center justify-center text-muted-foreground">
+                    {coverPreview ? <Image src={coverPreview} alt="Cover preview" width={150} height={100} className="rounded-md object-cover" /> : (
+                        <>
+                            <UploadCloud className="w-8 h-8 mb-2" />
+                            <span>Click to upload a cover image</span>
+                        </>
+                    )}
+                 </label>
                   {errors.coverImage && <p className="text-sm text-destructive">{errors.coverImage.message}</p>}
                   
-                  {suggestedImages.length > 0 && (
+                  {suggestedImages.length > 0 && !coverPreview && (
                     <div className="grid grid-cols-3 gap-4">
                       {suggestedImages.map((url, i) => (
-                        <div key={i} className="relative aspect-video cursor-pointer rounded-md overflow-hidden" onClick={() => setValue('coverImage', url)}>
+                        <div key={i} className="relative aspect-video cursor-pointer rounded-md overflow-hidden" onClick={() => {setValue('coverImage', url); setCoverPreview(url);}}>
                             <Image src={url} alt={`Suggestion ${i + 1}`} fill className="object-cover"/>
                         </div>
                       ))}
@@ -173,13 +208,22 @@ export default function UploadPortfolioModal() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="images">Project Image URLs</Label>
-                <Controller
-                  name="images"
-                  control={control}
-                  render={({ field }) => <Textarea id="images" placeholder="Enter image URLs, separated by commas" {...field} rows={3} />}
-                />
-                 <p className="text-xs text-muted-foreground">Add multiple image URLs separated by commas.</p>
+                <Label htmlFor="images">Project Images</Label>
+                <Input id="images" type="file" accept="image/*" multiple onChange={handleProjectImagesUpload} className="hidden" />
+                <label htmlFor="images" className="cursor-pointer border-2 border-dashed border-muted hover:border-primary rounded-lg p-6 flex flex-col items-center justify-center text-muted-foreground">
+                    <UploadCloud className="w-8 h-8 mb-2" />
+                    <span>Click to upload project images</span>
+                </label>
+                 <p className="text-xs text-muted-foreground">You can select multiple images.</p>
+                 {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-4 gap-4 mt-4">
+                        {imagePreviews.map((src, i) => (
+                            <div key={i} className="relative aspect-square rounded-md overflow-hidden">
+                                <Image src={src} alt={`Project image ${i+1}`} fill className="object-cover" />
+                            </div>
+                        ))}
+                    </div>
+                 )}
               </div>
 
 
