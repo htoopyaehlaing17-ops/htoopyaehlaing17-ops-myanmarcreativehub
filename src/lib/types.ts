@@ -43,8 +43,5 @@ export interface Job {
     budget: number;
     location: string;
     notes?: string;
-    deadline?: {
-        from: Date;
-        to: Date;
-    };
+    deadline?: Date;
 }

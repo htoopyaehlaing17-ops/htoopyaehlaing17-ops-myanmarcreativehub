@@ -95,7 +95,7 @@ export const jobs: Job[] = [
         budget: 500,
         location: "Yangon, Myanmar (Remote)",
         notes: "Please include a link to your Behance or Dribbble profile in your application.",
-        deadline: { from: new Date(), to: new Date(new Date().setDate(new Date().getDate() + 14)) }
+        deadline: new Date(new Date().setDate(new Date().getDate() + 14))
     },
     {
         id: 2,
@@ -107,6 +107,6 @@ export const jobs: Job[] = [
         budget: 1200,
         location: "Mandalay, Myanmar (Remote optional)",
         notes: "The project has a deadline of 3 months. We are looking for someone who can start immediately.",
-        deadline: { from: new Date(), to: new Date(new Date().setMonth(new Date().getMonth() + 1)) }
+        deadline: new Date(new Date().setMonth(new Date().getMonth() + 1))
     }
 ];

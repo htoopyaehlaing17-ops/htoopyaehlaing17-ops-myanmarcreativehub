@@ -17,7 +17,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 
 
@@ -29,7 +28,7 @@ const jobSchema = z.object({
   budget: z.coerce.number().min(1, 'Budget must be greater than 0'),
   location: z.string().min(3, 'Location is required'),
   notes: z.string().optional(),
-  deadline: z.object({ from: z.date(), to: z.date() }).optional(),
+  deadline: z.date().optional(),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -207,28 +206,17 @@ export default function CreateJobModal() {
                                 )}
                             >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value?.from ? (
-                                    field.value.to ? (
-                                        <>
-                                        {format(field.value.from, "LLL dd, y")} -{" "}
-                                        {format(field.value.to, "LLL dd, y")}
-                                        </>
-                                    ) : (
-                                        format(field.value.from, "LLL dd, y")
-                                    )
-                                ) : (
-                                    <span>Pick a date range</span>
+                                {field.value ? format(field.value, "LLL dd, y") : (
+                                    <span>Pick a date</span>
                                 )}
                             </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
-                                    initialFocus
-                                    mode="range"
-                                    defaultMonth={field.value?.from}
+                                    mode="single"
                                     selected={field.value}
                                     onSelect={field.onChange}
-                                    numberOfMonths={2}
+                                    initialFocus
                                 />
                             </PopoverContent>
                         </Popover>
