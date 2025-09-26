@@ -10,6 +10,8 @@ interface AuthContextType {
   profile: Profile | null;
   portfolios: Portfolio[];
   addPortfolio: (newPortfolio: Omit<Portfolio, 'id' | 'userId' | 'likes' | 'views'>) => void;
+  updatePortfolio: (updatedPortfolio: Portfolio) => void;
+  deletePortfolio: (portfolioId: number) => void;
   updateProfile: (updatedProfile: Profile) => void;
   handleLogin: (email: string, password: string) => Promise<{ error?: string }>;
   handleSignup: (name: string, email: string, password: string) => Promise<{ error?: string }>;
@@ -126,6 +128,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updatePortfolio = (updatedPortfolio: Portfolio) => {
+    setPortfolios(prev => prev.map(p => p.id === updatedPortfolio.id ? updatedPortfolio : p));
+    const index = initialPortfoliosData.findIndex(p => p.id === updatedPortfolio.id);
+    if (index !== -1) {
+      initialPortfoliosData[index] = updatedPortfolio;
+    }
+  };
+
+  const deletePortfolio = (portfolioId: number) => {
+    setPortfolios(prev => prev.filter(p => p.id !== portfolioId));
+    const index = initialPortfoliosData.findIndex(p => p.id === portfolioId);
+    if (index !== -1) {
+      initialPortfoliosData.splice(index, 1);
+    }
+  };
+
   const updateProfile = (updatedProfile: Profile) => {
     if (user && user.id === updatedProfile.userId) {
       setProfile(updatedProfile);
@@ -145,6 +163,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     portfolios,
     addPortfolio,
+    updatePortfolio,
+    deletePortfolio,
     updateProfile,
     handleLogin,
     handleSignup,

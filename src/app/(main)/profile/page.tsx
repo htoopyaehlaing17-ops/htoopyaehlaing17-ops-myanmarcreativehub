@@ -5,20 +5,33 @@ import { useApp } from '@/components/providers/app-provider';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit3, Mail, Phone, MapPin, Calendar, Plus, Grid3X3, LogIn, Eye, Trash2, Globe, Lock, Heart, User, Save, X } from 'lucide-react';
+import { Edit3, Mail, Phone, MapPin, Calendar, Plus, Grid3X3, LogIn, Eye, Trash2, Globe, Lock, Heart, User, Save, X, AlertTriangle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import type { Portfolio } from '@/lib/types';
 
 
 export default function ProfilePage() {
-  const { user, profile, portfolios, openLogin, updateProfile } = useAuth();
+  const { user, profile, portfolios, openLogin, updateProfile, deletePortfolio } = useAuth();
   const { openModal } = useApp();
   const { toast } = useToast();
 
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [editedBio, setEditedBio] = useState(profile?.bio || '');
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [portfolioToDelete, setPortfolioToDelete] = useState<Portfolio | null>(null);
   
   useEffect(() => {
     if (!user) {
@@ -54,6 +67,24 @@ export default function ProfilePage() {
 
   const handleNewProject = () => {
     openModal('uploadPortfolio');
+  };
+
+  const handleEditProject = (portfolio: Portfolio) => {
+    openModal('uploadPortfolio', { portfolio });
+  };
+  
+  const handleDeleteClick = (portfolio: Portfolio) => {
+    setPortfolioToDelete(portfolio);
+    setIsDeleteAlertOpen(true);
+  };
+  
+  const handleConfirmDelete = () => {
+    if (portfolioToDelete) {
+      deletePortfolio(portfolioToDelete.id);
+      toast({ title: "Project Deleted", description: `"${portfolioToDelete.title}" has been removed.` });
+      setPortfolioToDelete(null);
+      setIsDeleteAlertOpen(false);
+    }
   };
 
   const handleSaveBio = () => {
@@ -169,8 +200,8 @@ export default function ProfilePage() {
                     <Image src={p.coverImage} alt={p.title} width={800} height={450} className="w-full h-64 object-cover" />
                     <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded text-sm flex items-center gap-2"><Eye className="w-4 h-4" />{p.views}</div>
                     <div className="absolute top-4 left-4 flex gap-2">
-                      <Button size="icon" variant="secondary"><Edit3 className="w-4 h-4" /></Button>
-                      <Button size="icon" variant="destructive"><Trash2 className="w-4 h-4" /></Button>
+                       <Button size="icon" variant="secondary" onClick={() => handleEditProject(p)}><Edit3 className="w-4 h-4" /></Button>
+                       <Button size="icon" variant="destructive" onClick={() => handleDeleteClick(p)}><Trash2 className="w-4 h-4" /></Button>
                     </div>
                     {p.featured && <div className="absolute bottom-4 left-4 bg-accent text-accent-foreground px-3 py-1 rounded text-sm font-medium">Featured</div>}
                     <div className="absolute top-4 right-24 bg-black/50 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
@@ -199,6 +230,25 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
+      
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your project
+              <span className="font-bold"> "{portfolioToDelete?.title}" </span> 
+              and remove its data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPortfolioToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

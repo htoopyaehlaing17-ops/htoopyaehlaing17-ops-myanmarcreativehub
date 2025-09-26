@@ -2,15 +2,21 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState } from 'react';
+import type { Portfolio } from '@/lib/types';
 
 type ModalType = 'login' | 'signup' | 'uploadPortfolio' | 'editProfile' | null;
+
+interface ModalData {
+    portfolio?: Portfolio;
+}
 
 interface AppContextType {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   activeModal: ModalType;
-  openModal: (modal: ModalType) => void;
+  modalData: ModalData;
+  openModal: (modal: ModalType, data?: ModalData) => void;
   closeModal: () => void;
 }
 
@@ -19,18 +25,26 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [modalData, setModalData] = useState<ModalData>({});
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
 
-  const openModal = (modal: ModalType) => setActiveModal(modal);
-  const closeModal = () => setActiveModal(null);
+  const openModal = (modal: ModalType, data: ModalData = {}) => {
+    setActiveModal(modal);
+    setModalData(data);
+  };
+  const closeModal = () => {
+    setActiveModal(null);
+    setModalData({});
+  };
 
   const value = {
     isSidebarOpen,
     toggleSidebar,
     closeSidebar,
     activeModal,
+    modalData,
     openModal,
     closeModal,
   };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,7 +23,7 @@ const portfolioSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long'),
   description: z.string().min(10, 'Description must be at least 10 characters long'),
   category: z.string().min(1, 'Please select a category'),
-  coverImage: z.string().min(1, 'Please upload a cover image.'),
+  coverImage: z.string().min(1, 'Please upload or select a cover image.'),
   images: z.array(z.string()).optional(),
   isPublic: z.boolean().default(true),
   featured: z.boolean().default(false),
@@ -39,20 +39,21 @@ const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
 });
 
 export default function UploadPortfolioModal() {
-  const { activeModal, closeModal } = useApp();
-  const { addPortfolio } = useAuth();
+  const { activeModal, closeModal, modalData } = useApp();
+  const { addPortfolio, updatePortfolio } = useAuth();
   const { toast } = useToast();
   const [suggestedImages, setSuggestedImages] = useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
+  
+  const editingPortfolio = modalData?.portfolio;
+  const isEditing = !!editingPortfolio;
 
   const {
     control,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<PortfolioFormData>({
     resolver: zodResolver(portfolioSchema),
@@ -68,13 +69,48 @@ export default function UploadPortfolioModal() {
   });
 
   const descriptionValue = watch('description');
+  const coverImageValue = watch('coverImage');
+  const imagesValue = watch('images');
+
+  useEffect(() => {
+    if (isEditing && editingPortfolio) {
+        reset({
+            title: editingPortfolio.title,
+            description: editingPortfolio.description,
+            category: editingPortfolio.category,
+            coverImage: editingPortfolio.coverImage,
+            images: editingPortfolio.images,
+            isPublic: editingPortfolio.isPublic,
+            featured: editingPortfolio.featured,
+        });
+    } else {
+        reset({
+            title: '',
+            description: '',
+            category: '',
+            coverImage: '',
+            images: [],
+            isPublic: true,
+            featured: false,
+        });
+    }
+  }, [isEditing, editingPortfolio, reset]);
+  
+  const handleClose = () => {
+    reset();
+    setSuggestedImages([]);
+    closeModal();
+  }
 
   const onSubmit = (data: PortfolioFormData) => {
-    addPortfolio({ ...data, images: data.images || [] });
-    toast({ title: 'Project Added!', description: 'Your new project has been added to your portfolio.' });
-    closeModal();
-    setCoverPreview(null);
-    setImagePreviews([]);
+    if (isEditing && editingPortfolio) {
+        updatePortfolio({ ...editingPortfolio, ...data });
+        toast({ title: 'Project Updated!', description: 'Your project has been successfully updated.' });
+    } else {
+        addPortfolio({ ...data, images: data.images || [] });
+        toast({ title: 'Project Added!', description: 'Your new project has been added to your portfolio.' });
+    }
+    handleClose();
   };
   
   const handleSuggestImages = async () => {
@@ -104,7 +140,6 @@ export default function UploadPortfolioModal() {
     if (file) {
       const dataUri = await toBase64(file);
       setValue('coverImage', dataUri);
-      setCoverPreview(dataUri);
     }
   };
   
@@ -113,10 +148,15 @@ export default function UploadPortfolioModal() {
     if (files) {
       const fileArray = Array.from(files);
       const dataUris = await Promise.all(fileArray.map(file => toBase64(file)));
-      setValue('images', dataUris);
-      setImagePreviews(dataUris);
+      const currentImages = watch('images') || [];
+      setValue('images', [...currentImages, ...dataUris]);
     }
   };
+
+  const removeProjectImage = (index: number) => {
+    const currentImages = watch('images') || [];
+    setValue('images', currentImages.filter((_, i) => i !== index));
+  }
 
 
   if (activeModal !== 'uploadPortfolio') return null;
@@ -126,8 +166,8 @@ export default function UploadPortfolioModal() {
       <div className="bg-card rounded-lg shadow-xl w-full max-w-2xl relative animate-in fade-in-0 zoom-in-95">
         <div className="flex flex-col max-h-[90vh]">
           <div className="flex justify-between items-center p-6 border-b">
-            <h2 className="text-2xl font-bold font-headline text-card-foreground">Add New Project</h2>
-            <Button variant="ghost" size="icon" onClick={closeModal} className="p-2 hover:bg-muted rounded-full">
+            <h2 className="text-2xl font-bold font-headline text-card-foreground">{isEditing ? "Edit Project" : "Add New Project"}</h2>
+            <Button variant="ghost" size="icon" onClick={handleClose} className="p-2 hover:bg-muted rounded-full">
               <X className="w-5 h-5 text-muted-foreground" />
             </Button>
           </div>
@@ -160,7 +200,7 @@ export default function UploadPortfolioModal() {
                     name="category"
                     control={control}
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
@@ -185,9 +225,9 @@ export default function UploadPortfolioModal() {
                       {isSuggesting ? 'Thinking...' : 'Suggest with AI'}
                     </Button>
                 </div>
-                 <Input id="coverImage" type="file" accept="image/*" onChange={handleCoverImageUpload} className="hidden" />
-                 <label htmlFor="coverImage" className="cursor-pointer border-2 border-dashed border-muted hover:border-primary rounded-lg p-6 flex flex-col items-center justify-center text-muted-foreground">
-                    {coverPreview ? <Image src={coverPreview} alt="Cover preview" width={150} height={100} className="rounded-md object-cover" /> : (
+                 <Input id="coverImage-upload" type="file" accept="image/*" onChange={handleCoverImageUpload} className="hidden" />
+                 <label htmlFor="coverImage-upload" className="cursor-pointer border-2 border-dashed border-muted hover:border-primary rounded-lg p-6 flex flex-col items-center justify-center text-muted-foreground">
+                    {coverImageValue ? <Image src={coverImageValue} alt="Cover preview" width={150} height={100} className="rounded-md object-cover" /> : (
                         <>
                             <UploadCloud className="w-8 h-8 mb-2" />
                             <span>Click to upload a cover image</span>
@@ -196,10 +236,10 @@ export default function UploadPortfolioModal() {
                  </label>
                   {errors.coverImage && <p className="text-sm text-destructive">{errors.coverImage.message}</p>}
                   
-                  {suggestedImages.length > 0 && !coverPreview && (
+                  {suggestedImages.length > 0 && !coverImageValue && (
                     <div className="grid grid-cols-3 gap-4">
                       {suggestedImages.map((url, i) => (
-                        <div key={i} className="relative aspect-video cursor-pointer rounded-md overflow-hidden" onClick={() => {setValue('coverImage', url); setCoverPreview(url);}}>
+                        <div key={i} className="relative aspect-video cursor-pointer rounded-md overflow-hidden" onClick={() => setValue('coverImage', url)}>
                             <Image src={url} alt={`Suggestion ${i + 1}`} fill className="object-cover"/>
                         </div>
                       ))}
@@ -208,18 +248,21 @@ export default function UploadPortfolioModal() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="images">Project Images</Label>
-                <Input id="images" type="file" accept="image/*" multiple onChange={handleProjectImagesUpload} className="hidden" />
-                <label htmlFor="images" className="cursor-pointer border-2 border-dashed border-muted hover:border-primary rounded-lg p-6 flex flex-col items-center justify-center text-muted-foreground">
+                <Label htmlFor="images-upload">Project Images</Label>
+                <Input id="images-upload" type="file" accept="image/*" multiple onChange={handleProjectImagesUpload} className="hidden" />
+                <label htmlFor="images-upload" className="cursor-pointer border-2 border-dashed border-muted hover:border-primary rounded-lg p-6 flex flex-col items-center justify-center text-muted-foreground">
                     <UploadCloud className="w-8 h-8 mb-2" />
-                    <span>Click to upload project images</span>
+                    <span>Click to add project images</span>
                 </label>
                  <p className="text-xs text-muted-foreground">You can select multiple images.</p>
-                 {imagePreviews.length > 0 && (
+                 {imagesValue && imagesValue.length > 0 && (
                     <div className="grid grid-cols-4 gap-4 mt-4">
-                        {imagePreviews.map((src, i) => (
-                            <div key={i} className="relative aspect-square rounded-md overflow-hidden">
+                        {imagesValue.map((src, i) => (
+                            <div key={i} className="relative aspect-square rounded-md overflow-hidden group">
                                 <Image src={src} alt={`Project image ${i+1}`} fill className="object-cover" />
+                                <button type="button" onClick={() => removeProjectImage(i)} className="absolute top-1 right-1 bg-destructive/80 hover:bg-destructive text-destructive-foreground p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <X className="w-3 h-3" />
+                                </button>
                             </div>
                         ))}
                     </div>
@@ -249,7 +292,7 @@ export default function UploadPortfolioModal() {
             </div>
             
             <div className="flex justify-end p-6 border-t bg-muted/50">
-              <Button type="submit">Add Project</Button>
+              <Button type="submit">{isEditing ? "Save Changes" : "Add Project"}</Button>
             </div>
           </form>
         </div>
