@@ -14,7 +14,7 @@ import type { Portfolio } from '@/lib/types';
 export default function PortfolioPage() {
     const { portfolios, updatePortfolio } = useAuth();
     const { toast } = useToast();
-    const publicPortfolios = portfolios.filter(p => p.isPublic);
+    const publicPortfolios = portfolios.filter(p => p.isPublic).sort((a, b) => b.likes - a.likes);
     const [likedPortfolios, setLikedPortfolios] = useState<Set<number>>(new Set());
 
     const sectionContent = {
