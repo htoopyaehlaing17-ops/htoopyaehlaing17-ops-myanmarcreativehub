@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState } from 'react';
 import type { Portfolio } from '@/lib/types';
 
-type ModalType = 'login' | 'signup' | 'uploadPortfolio' | 'editProfile' | null;
+type ModalType = 'login' | 'signup' | 'uploadPortfolio' | 'editProfile' | 'editSkills' | null;
 
 interface ModalData {
     portfolio?: Portfolio;
