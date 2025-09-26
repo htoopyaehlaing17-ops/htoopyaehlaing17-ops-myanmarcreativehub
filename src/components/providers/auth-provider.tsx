@@ -36,29 +36,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-let users: User[] = [...initialUsers];
+// We will keep `initialProfiles` to find existing mock profiles or create new ones.
 let profiles: Profile[] = [...initialProfiles];
 
-const mapFirebaseUserToAppUser = (firebaseUser: FirebaseUser): User => {
-  let appUser = users.find(u => u.email === firebaseUser.email);
-  if (appUser) {
-    if(firebaseUser.photoURL && appUser.avatar !== firebaseUser.photoURL) {
-      appUser.avatar = firebaseUser.photoURL;
-    }
-    return appUser;
-  }
-  
-  appUser = {
-    id: Date.now(),
+// This function now primarily handles mapping and profile creation/retrieval.
+const mapFirebaseUserToAppUser = (firebaseUser: FirebaseUser): { appUser: User, appProfile: Profile | null } => {
+  const appUser: User = {
+    id: firebaseUser.uid.hashCode(), // Simple hash for a numeric ID
     name: firebaseUser.displayName || 'New User',
     email: firebaseUser.email!,
-    avatar: firebaseUser.photoURL
+    avatar: firebaseUser.photoURL,
   };
-  users.push(appUser);
+
+  let userProfile = profiles.find(p => p.email === appUser.email);
   
-  let userProfile = profiles.find(p => p.userId === appUser!.id);
   if (!userProfile) {
-    userProfile = {
+    const newProfile: Profile = {
       userId: appUser.id,
       name: appUser.name,
       email: appUser.email,
@@ -70,10 +63,27 @@ const mapFirebaseUserToAppUser = (firebaseUser: FirebaseUser): User => {
       skills: [],
       memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     };
-    profiles.push(userProfile);
+    profiles.push(newProfile);
+    userProfile = newProfile;
+  } else if (appUser.name !== userProfile.name || appUser.avatar !== userProfile.avatar) {
+    // Update profile if Firebase user info is different
+    userProfile.name = appUser.name;
+    userProfile.avatar = appUser.avatar;
   }
-  
-  return appUser;
+
+  return { appUser, appProfile: userProfile };
+};
+
+// Simple hash function for string to get a number ID
+String.prototype.hashCode = function() {
+  var hash = 0, i, chr;
+  if (this.length === 0) return hash;
+  for (i = 0; i < this.length; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
 };
 
 
@@ -89,10 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        const appUser = mapFirebaseUserToAppUser(firebaseUser);
+        const { appUser, appProfile } = mapFirebaseUserToAppUser(firebaseUser);
         setUser(appUser);
-        const foundProfile = profiles.find(p => p.userId === appUser.id);
-        setProfile(foundProfile || null);
+        setProfile(appProfile);
       } else {
         setUser(null);
         setProfile(null);
@@ -109,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       closeModal();
       return {};
     } catch (error: any) {
+      console.error("Login Error:", error.code, error.message);
       return { error: error.message };
     }
   };
@@ -116,13 +126,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleSignup = async (name: string, email: string, password: string): Promise<{ error?: string }> => {
      try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateFirebaseProfile(userCredential.user, { displayName: name });
+      const firebaseUser = userCredential.user;
+      await updateFirebaseProfile(firebaseUser, { displayName: name });
       
-      mapFirebaseUserToAppUser(userCredential.user);
+      // After creating user, immediately map and set profile
+      const { appUser, appProfile } = mapFirebaseUserToAppUser(firebaseUser);
+      setUser(appUser);
+      setProfile(appProfile);
       
       closeModal();
       return {};
     } catch (error: any) {
+       console.error("Signup Error:", error.code, error.message);
        return { error: error.message };
     }
   };
@@ -133,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithPopup(auth, provider);
       closeModal();
     } catch (error: any) {
-      console.error("Google login error:", error);
+      console.error("Google login error:", error.code, error.message);
     }
   };
 
@@ -197,15 +212,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profiles[profileIndex] = updatedProfile;
       }
       
-      const userIndex = users.findIndex(u => u.id === updatedProfile.userId);
-      if (userIndex !== -1) {
-          users[userIndex].name = updatedProfile.name;
-          if (updatedProfile.avatar) {
-            users[userIndex].avatar = updatedProfile.avatar;
-          }
-      }
-      if (auth.currentUser && auth.currentUser.displayName !== updatedProfile.name) {
-          updateFirebaseProfile(auth.currentUser, { displayName: updatedProfile.name, photoURL: updatedProfile.avatar });
+      if(auth.currentUser) {
+        setUser(currentUser => currentUser ? { ...currentUser, name: updatedProfile.name, avatar: updatedProfile.avatar } : null);
+
+        if (auth.currentUser.displayName !== updatedProfile.name || auth.currentUser.photoURL !== updatedProfile.avatar) {
+            updateFirebaseProfile(auth.currentUser, { displayName: updatedProfile.name, photoURL: updatedProfile.avatar });
+        }
       }
     }
   };
