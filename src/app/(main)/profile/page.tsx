@@ -5,13 +5,20 @@ import { useApp } from '@/components/providers/app-provider';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit3, Mail, Phone, MapPin, Calendar, Plus, Grid3X3, LogIn, Eye, Trash2, Globe, Lock, Heart, User } from 'lucide-react';
-import { useEffect } from 'react';
+import { Edit3, Mail, Phone, MapPin, Calendar, Plus, Grid3X3, LogIn, Eye, Trash2, Globe, Lock, Heart, User, Save, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+
 
 export default function ProfilePage() {
-  const { user, profile, portfolios, openLogin } = useAuth();
+  const { user, profile, portfolios, openLogin, updateProfile } = useAuth();
   const { openModal } = useApp();
+  const { toast } = useToast();
+
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [editedBio, setEditedBio] = useState(profile?.bio || '');
   
   useEffect(() => {
     if (!user) {
@@ -19,6 +26,13 @@ export default function ProfilePage() {
         // openLogin(); 
     }
   }, [user, openLogin]);
+
+  useEffect(() => {
+    if (profile) {
+      setEditedBio(profile.bio);
+    }
+  }, [profile]);
+
 
   if (!user || !profile) {
     return (
@@ -41,6 +55,19 @@ export default function ProfilePage() {
   const handleNewProject = () => {
     openModal('uploadPortfolio');
   };
+
+  const handleSaveBio = () => {
+    if (profile) {
+      updateProfile({ ...profile, bio: editedBio });
+      setIsEditingBio(false);
+      toast({ title: 'Success', description: 'Your bio has been updated.' });
+    }
+  };
+
+  const handleCancelEditBio = () => {
+    setEditedBio(profile?.bio || '');
+    setIsEditingBio(false);
+  }
 
   return (
     <div className="space-y-6">
@@ -99,8 +126,33 @@ export default function ProfilePage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>About Me</CardTitle></CardHeader>
-        <CardContent><p className="text-foreground leading-relaxed">{profile.bio}</p></CardContent>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>About Me</CardTitle>
+          {!isEditingBio && (
+            <Button variant="ghost" size="icon" onClick={() => setIsEditingBio(true)}>
+              <Edit3 className="w-4 h-4" />
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {isEditingBio ? (
+            <div className="space-y-4">
+              <Textarea
+                value={editedBio}
+                onChange={(e) => setEditedBio(e.target.value)}
+                rows={6}
+                className="w-full"
+                placeholder="Tell us about yourself..."
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={handleCancelEditBio}><X className="w-4 h-4 mr-2" />Cancel</Button>
+                <Button onClick={handleSaveBio}><Save className="w-4 h-4 mr-2" />Save</Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+          )}
+        </CardContent>
       </Card>
 
       <Card>

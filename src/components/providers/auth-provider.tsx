@@ -10,6 +10,7 @@ interface AuthContextType {
   profile: Profile | null;
   portfolios: Portfolio[];
   addPortfolio: (newPortfolio: Omit<Portfolio, 'id' | 'userId' | 'likes' | 'views'>) => void;
+  updateProfile: (updatedProfile: Profile) => void;
   handleLogin: (email: string, password: string) => Promise<{ error?: string }>;
   handleSignup: (name: string, email: string, password: string) => Promise<{ error?: string }>;
   handleGoogleLogin: () => void;
@@ -125,6 +126,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateProfile = (updatedProfile: Profile) => {
+    if (user && user.id === updatedProfile.userId) {
+      setProfile(updatedProfile);
+      const profileIndex = profiles.findIndex(p => p.userId === updatedProfile.userId);
+      if (profileIndex !== -1) {
+        profiles[profileIndex] = updatedProfile;
+      }
+    }
+  };
+
+
   const openLogin = () => openModal('login');
   const openSignup = () => openModal('signup');
 
@@ -133,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     portfolios,
     addPortfolio,
+    updateProfile,
     handleLogin,
     handleSignup,
     handleGoogleLogin,
