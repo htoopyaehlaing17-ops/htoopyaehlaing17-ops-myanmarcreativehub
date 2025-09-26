@@ -93,7 +93,7 @@ export default function JobsPage() {
                         {job.deadline && (
                              <div className="flex items-center gap-2">
                                 <CalendarClock className="w-4 h-4" />
-                                <span>Apply by {format(job.deadline, "LLL dd, y")}</span>
+                                <span>Apply before {format(job.deadline, "LLL dd, y")}</span>
                             </div>
                         )}
                    </div>
