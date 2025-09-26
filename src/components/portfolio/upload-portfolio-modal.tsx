@@ -38,6 +38,11 @@ const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
     reader.onerror = error => reject(error);
 });
 
+// We can check for the existence of the API key on the client side
+// by checking for the environment variable. It won't expose the key itself.
+const isAiEnabled = !!process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+
 export default function UploadPortfolioModal() {
   const { activeModal, closeModal, modalData } = useApp();
   const { addPortfolio, updatePortfolio } = useAuth();
@@ -219,11 +224,13 @@ export default function UploadPortfolioModal() {
                 <div className="flex items-center justify-between">
                     <div>
                         <Label htmlFor="coverImage">Cover Image</Label>
-                        <p className="text-xs text-muted-foreground">Upload an image or let AI suggest one.</p>
+                        <p className="text-xs text-muted-foreground">Upload an image {isAiEnabled && "or let AI suggest one."}</p>
                     </div>
-                    <Button type="button" onClick={handleSuggestImages} disabled={isSuggesting} size="sm">
-                      {isSuggesting ? 'Thinking...' : 'Suggest with AI'}
-                    </Button>
+                    {isAiEnabled && (
+                      <Button type="button" onClick={handleSuggestImages} disabled={isSuggesting} size="sm">
+                        {isSuggesting ? 'Thinking...' : 'Suggest with AI'}
+                      </Button>
+                    )}
                 </div>
                  <Input id="coverImage-upload" type="file" accept="image/*" onChange={handleCoverImageUpload} className="hidden" />
                  <label htmlFor="coverImage-upload" className="cursor-pointer border-2 border-dashed border-muted hover:border-primary rounded-lg p-6 flex flex-col items-center justify-center text-muted-foreground">
