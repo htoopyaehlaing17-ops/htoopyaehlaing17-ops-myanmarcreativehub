@@ -193,29 +193,35 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           {userPortfolios.length > 0 ? (
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {userPortfolios.map((p) => (
-                <Card key={p.id} className="overflow-hidden">
+                <Card key={p.id} className="overflow-hidden flex flex-col">
                   <div className="relative">
-                    <Image src={p.coverImage} alt={p.title} width={800} height={450} className="w-full h-64 object-cover" />
-                    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded text-sm flex items-center gap-2"><Eye className="w-4 h-4" />{p.views}</div>
-                    <div className="absolute top-4 left-4 flex gap-2">
-                       <Button size="icon" variant="secondary" onClick={() => handleEditProject(p)}><Edit3 className="w-4 h-4" /></Button>
-                       <Button size="icon" variant="destructive" onClick={() => handleDeleteClick(p)}><Trash2 className="w-4 h-4" /></Button>
+                    <Image src={p.coverImage} alt={p.title} width={800} height={450} className="w-full h-48 object-cover" />
+                    <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                       <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => handleEditProject(p)}><Edit3 className="w-4 h-4" /></Button>
+                       <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleDeleteClick(p)}><Trash2 className="w-4 h-4" /></Button>
                     </div>
-                    {p.featured && <div className="absolute bottom-4 left-4 bg-accent text-accent-foreground px-3 py-1 rounded text-sm font-medium">Featured</div>}
-                    <div className="absolute top-4 right-24 bg-black/50 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
+                    {p.featured && <div className="absolute bottom-2 left-2 bg-accent text-accent-foreground px-2 py-0.5 rounded text-xs font-medium">Featured</div>}
+                    <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-0.5 rounded text-xs flex items-center gap-1">
                       {p.isPublic ? <><Globe className="w-3 h-3" />Public</> : <><Lock className="w-3 h-3" />Private</>}
                     </div>
                   </div>
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-xl font-bold text-foreground">{p.title}</h3>
-                      <Button variant="ghost" size="icon"><Heart className="w-5 h-5 text-muted-foreground" /></Button>
+                  <div className="p-4 flex flex-col flex-grow">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-bold text-foreground leading-tight">{p.title}</h3>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Heart className="w-4 h-4" />
+                        <span className="text-sm font-medium">{p.likes}</span>
+                      </div>
                     </div>
-                    <p className="text-muted-foreground mb-4 leading-relaxed">{p.description}</p>
-                    <div className="mb-4"><span className="text-sm text-muted-foreground">Category</span><p className="font-medium text-foreground">{p.category}</p></div>
-                    <div className="mt-4 pt-4 border-t"><span className="text-sm text-muted-foreground">{p.images.length} project image{p.images.length !== 1 ? 's' : ''}</span></div>
+                    <p className="text-muted-foreground text-sm mb-3 flex-grow">{p.description}</p>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-medium text-foreground">{p.category}</span>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Eye className="w-4 h-4" />{p.views}
+                      </div>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -252,3 +258,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
