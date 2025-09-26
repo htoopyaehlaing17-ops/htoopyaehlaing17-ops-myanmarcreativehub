@@ -37,33 +37,29 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// In a real production app, users and profiles would be stored in a database like Firestore,
-// not in-memory arrays. For this prototype, we'll merge Firebase Auth with our local data.
 let users: User[] = [...initialUsers];
 let profiles: Profile[] = [...initialProfiles];
 
+// Initialize Firebase Auth directly. This ensures it's ready when needed.
+const auth = getAuth(app);
 
 const mapFirebaseUserToAppUser = (firebaseUser: FirebaseUser): User => {
-  // Check if user already exists in our mock data
   let appUser = users.find(u => u.email === firebaseUser.email);
   if (appUser) {
-    // Update avatar from Google if available
     if(firebaseUser.photoURL && appUser.avatar !== firebaseUser.photoURL) {
       appUser.avatar = firebaseUser.photoURL;
     }
     return appUser;
   }
   
-  // If new user, create them
   appUser = {
-    id: Date.now(), // In a real app, use a proper ID system
+    id: Date.now(),
     name: firebaseUser.displayName || 'New User',
     email: firebaseUser.email!,
     avatar: firebaseUser.photoURL
   };
   users.push(appUser);
   
-  // Create a profile for the new user
   let userProfile = profiles.find(p => p.userId === appUser!.id);
   if (!userProfile) {
     userProfile = {
@@ -95,8 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   useEffect(() => {
-    // Reference the app to ensure it's initialized before using auth
-    const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const appUser = mapFirebaseUserToAppUser(firebaseUser);
@@ -115,7 +109,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleLogin = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
-      const auth = getAuth(app);
       await signInWithEmailAndPassword(auth, email, password);
       closeModal();
       return {};
@@ -126,11 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSignup = async (name: string, email: string, password: string): Promise<{ error?: string }> => {
      try {
-      const auth = getAuth(app);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateFirebaseProfile(userCredential.user, { displayName: name });
       
-      // Manually map to ensure our local mock data is updated for this session
       mapFirebaseUserToAppUser(userCredential.user);
       
       closeModal();
@@ -141,22 +132,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const handleGoogleLogin = async () => {
-    const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
       closeModal();
     } catch (error: any) {
       console.error("Google login error:", error);
-      if (error.code === 'auth/popup-closed-by-user') {
-          return;
-      }
-      // You can add more specific error handling here if needed
     }
   };
 
   const handleLogout = async () => {
-    const auth = getAuth(app);
     await signOut(auth);
   };
 
@@ -223,7 +208,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             users[userIndex].avatar = updatedProfile.avatar;
           }
       }
-      const auth = getAuth(app);
       if (auth.currentUser && auth.currentUser.displayName !== updatedProfile.name) {
           updateFirebaseProfile(auth.currentUser, { displayName: updatedProfile.name, photoURL: updatedProfile.avatar });
       }
@@ -253,7 +237,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   if (loading) {
-      return null; // Or a loading spinner
+      return null;
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
