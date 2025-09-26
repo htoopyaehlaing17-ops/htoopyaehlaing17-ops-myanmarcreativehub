@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/components/providers/auth-provider';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,7 +24,8 @@ export default function PortfolioPage() {
     };
 
     const handleLikeClick = (e: React.MouseEvent, portfolio: Portfolio) => {
-        e.stopPropagation(); // Prevent card click event from firing
+        e.preventDefault(); 
+        e.stopPropagation(); 
         if (!user) {
             toast({ title: 'Login Required', description: 'Please login to like projects.' });
             return;
@@ -49,16 +51,6 @@ export default function PortfolioPage() {
         });
     };
 
-    const handleCardClick = (portfolio: Portfolio) => {
-        // We only increment views if another user is viewing it.
-        if (user?.id !== portfolio.userId) {
-            const updatedPortfolio = { ...portfolio, views: portfolio.views + 1 };
-            updatePortfolio(updatedPortfolio);
-        }
-        // In a real app, you would navigate to the project details page here.
-        console.log(`Card for "${portfolio.title}" clicked. Current views: ${portfolio.views + 1}`);
-    };
-
     return (
         <div className="space-y-8">
             <div className="text-center">
@@ -71,42 +63,42 @@ export default function PortfolioPage() {
                     {publicPortfolios.map((p) => {
                         const isLiked = likedPortfolios.has(p.id);
                         return (
-                            <Card 
-                                key={p.id} 
-                                className="overflow-hidden group cursor-pointer"
-                                onClick={() => handleCardClick(p)}
-                            >
-                                <div className="relative">
-                                    <Image src={p.coverImage} alt={p.title} width={600} height={400} className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105" />
-                                    <div className="absolute top-3 right-3 flex items-center gap-2">
-                                        <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm">
-                                            <Eye className="w-4 h-4 mr-1.5" />
-                                            {p.views}
-                                        </Badge>
-                                    </div>
-                                    {p.featured && (
-                                        <Badge className="absolute bottom-3 left-3" variant="default">Featured</Badge>
-                                    )}
-                                </div>
-                                <CardContent className="p-4">
-                                    <h3 className="text-lg font-bold text-foreground mb-2 truncate">{p.title}</h3>
-                                    <p className="text-muted-foreground text-sm mb-3 h-10 overflow-hidden">{p.description}</p>
-                                    <div className="flex justify-between items-center pt-3 border-t">
-                                         <Badge variant="outline">{p.category}</Badge>
-                                        <div className="flex items-center gap-1 text-muted-foreground">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className={cn("text-muted-foreground hover:text-destructive h-8 w-8", isLiked && "text-destructive")}
-                                                onClick={(e) => handleLikeClick(e, p)}
-                                            >
-                                                <Heart className={cn("w-5 h-5", isLiked && "fill-current")} />
-                                            </Button>
-                                            <span className="text-sm font-medium">{p.likes}</span>
+                            <Link href={`/portfolio/${p.id}`} key={p.id} className="block group">
+                                <Card 
+                                    className="overflow-hidden h-full flex flex-col"
+                                >
+                                    <div className="relative">
+                                        <Image src={p.coverImage} alt={p.title} width={600} height={400} className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105" />
+                                        <div className="absolute top-3 right-3 flex items-center gap-2">
+                                            <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm">
+                                                <Eye className="w-4 h-4 mr-1.5" />
+                                                {p.views}
+                                            </Badge>
                                         </div>
+                                        {p.featured && (
+                                            <Badge className="absolute bottom-3 left-3" variant="default">Featured</Badge>
+                                        )}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                    <CardContent className="p-4 flex flex-col flex-grow">
+                                        <h3 className="text-lg font-bold text-foreground mb-2 truncate">{p.title}</h3>
+                                        <p className="text-muted-foreground text-sm mb-3 h-10 overflow-hidden flex-grow">{p.description}</p>
+                                        <div className="flex justify-between items-center pt-3 border-t">
+                                             <Badge variant="outline">{p.category}</Badge>
+                                            <div className="flex items-center gap-1 text-muted-foreground">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className={cn("text-muted-foreground hover:text-destructive h-8 w-8", isLiked && "text-destructive")}
+                                                    onClick={(e) => handleLikeClick(e, p)}
+                                                >
+                                                    <Heart className={cn("w-5 h-5", isLiked && "fill-current")} />
+                                                </Button>
+                                                <span className="text-sm font-medium">{p.likes}</span>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
                         )
                     })}
                 </div>
