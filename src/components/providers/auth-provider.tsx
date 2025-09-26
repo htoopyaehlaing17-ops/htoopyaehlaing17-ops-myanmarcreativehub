@@ -1,9 +1,21 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useApp } from './app-provider';
 import type { User, Profile, Portfolio, Job } from '@/lib/types';
-import { users, profiles, portfolios as initialPortfoliosData, jobs as initialJobsData } from '@/lib/data';
+import { users as initialUsers, profiles as initialProfiles, portfolios as initialPortfoliosData, jobs as initialJobsData } from '@/lib/data';
+import { auth } from '@/lib/firebase';
+import { 
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile as updateFirebaseProfile,
+  type User as FirebaseUser
+} from 'firebase/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -25,101 +37,117 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// This provider is a mock. In a real app, this would be handled by a proper auth library like NextAuth.js
-// and data would be fetched from a database.
+// In a real production app, users and profiles would be stored in a database like Firestore,
+// not in-memory arrays. For this prototype, we'll merge Firebase Auth with our local data.
+let users: User[] = [...initialUsers];
+let profiles: Profile[] = [...initialProfiles];
+
+
+const mapFirebaseUserToAppUser = (firebaseUser: FirebaseUser): User => {
+  // Check if user already exists in our mock data
+  let appUser = users.find(u => u.email === firebaseUser.email);
+  if (appUser) {
+    // Update avatar from Google if available
+    if(firebaseUser.photoURL && appUser.avatar !== firebaseUser.photoURL) {
+      appUser.avatar = firebaseUser.photoURL;
+    }
+    return appUser;
+  }
+  
+  // If new user, create them
+  appUser = {
+    id: Date.now(), // In a real app, use a proper ID system
+    name: firebaseUser.displayName || 'New User',
+    email: firebaseUser.email!,
+    avatar: firebaseUser.photoURL
+  };
+  users.push(appUser);
+  
+  // Create a profile for the new user
+  let userProfile = profiles.find(p => p.userId === appUser!.id);
+  if (!userProfile) {
+    userProfile = {
+      userId: appUser.id,
+      name: appUser.name,
+      email: appUser.email,
+      avatar: appUser.avatar,
+      title: 'Creative Professional',
+      phone: '',
+      location: '',
+      bio: `Welcome to my creative hub! I'm ${appUser.name}.`,
+      skills: [],
+      memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    };
+    profiles.push(userProfile);
+  }
+  
+  return appUser;
+};
+
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { openModal, closeModal } = useApp();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfoliosData);
   const [jobs, setJobs] = useState<Job[]>(initialJobsData);
+  const [loading, setLoading] = useState(true);
 
 
   useEffect(() => {
-    // Mock checking for a logged-in user, e.g., from localStorage
-    const loggedInUserEmail = localStorage.getItem('loggedInUser');
-    if (loggedInUserEmail) {
-      const foundUser = users.find(u => u.email === loggedInUserEmail);
-      if (foundUser) {
-        setUser(foundUser);
-        const foundProfile = profiles.find(p => p.userId === foundUser.id);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const appUser = mapFirebaseUserToAppUser(firebaseUser);
+        setUser(appUser);
+        const foundProfile = profiles.find(p => p.userId === appUser.id);
         setProfile(foundProfile || null);
+      } else {
+        setUser(null);
+        setProfile(null);
       }
-    } else {
-        const guestProfile = profiles.find(p => p.userId === 1);
-        if (guestProfile) {
-          setProfile(guestProfile);
-        }
-    }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = (loggedInUser: User) => {
-    setUser(loggedInUser);
-    const foundProfile = profiles.find(p => p.userId === loggedInUser.id);
-    setProfile(foundProfile || null);
-    localStorage.setItem('loggedInUser', loggedInUser.email);
-    closeModal();
-  };
-
   const handleLogin = async (email: string, password: string): Promise<{ error?: string }> => {
-    const foundUser = users.find(u => u.email === email && u.password === password);
-    if (foundUser) {
-      login(foundUser);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      closeModal();
       return {};
+    } catch (error: any) {
+      return { error: error.message };
     }
-    return { error: 'Invalid email or password.' };
   };
 
   const handleSignup = async (name: string, email: string, password: string): Promise<{ error?: string }> => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return { error: 'Please enter a valid email address.' };
-    }
-    if (users.find(u => u.email === email)) {
-      return { error: 'An account with this email already exists.' };
-    }
-    
-    const newUser: User = {
-      id: Date.now(),
-      name,
-      email,
-      password,
-      avatar: `https://i.pravatar.cc/150?u=${email}`
-    };
-    users.push(newUser);
-
-    const newProfile: Profile = {
-        userId: newUser.id,
-        name,
-        email,
-        title: 'Creative Professional',
-        phone: '',
-        location: '',
-        bio: `Welcome to my creative hub! I'm ${name}.`,
-        skills: [],
-        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        avatar: newUser.avatar,
-    };
-    profiles.push(newProfile);
-
-    login(newUser);
-    return {};
-  };
-
-  const handleGoogleLogin = () => {
-    const googleUser = users.find(u => u.email === 'aung.myat@gmail.com');
-    if (googleUser) {
-      login(googleUser);
+     try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateFirebaseProfile(userCredential.user, { displayName: name });
+      
+      // Manually map to ensure our local mock data is updated for this session
+      mapFirebaseUserToAppUser(userCredential.user);
+      
+      closeModal();
+      return {};
+    } catch (error: any) {
+       return { error: error.message };
     }
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    const guestProfile = profiles.find(p => p.userId === 1);
-    if (guestProfile) {
-        setProfile(guestProfile);
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      closeModal();
+    } catch (error: any) {
+      console.error("Google login error:", error.message);
     }
-    localStorage.removeItem('loggedInUser');
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
   };
 
   const addPortfolio = (newPortfolioData: Omit<Portfolio, 'id' | 'userId' | 'likes' | 'views'>) => {
@@ -172,14 +200,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = (updatedProfile: Profile) => {
     if (user && user.id === updatedProfile.userId) {
       setProfile(updatedProfile);
+      
       const profileIndex = profiles.findIndex(p => p.userId === updatedProfile.userId);
       if (profileIndex !== -1) {
         profiles[profileIndex] = updatedProfile;
       }
       
       const userIndex = users.findIndex(u => u.id === updatedProfile.userId);
-      if (userIndex !== -1 && updatedProfile.avatar) {
-        users[userIndex].avatar = updatedProfile.avatar;
+      if (userIndex !== -1) {
+          users[userIndex].name = updatedProfile.name;
+          if (updatedProfile.avatar) {
+            users[userIndex].avatar = updatedProfile.avatar;
+          }
+      }
+
+      if (auth.currentUser && auth.currentUser.displayName !== updatedProfile.name) {
+          updateFirebaseProfile(auth.currentUser, { displayName: updatedProfile.name, photoURL: updatedProfile.avatar });
       }
     }
   };
@@ -205,6 +241,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     openLogin,
     openSignup,
   };
+
+  if (loading) {
+      return null; // Or a loading spinner
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
