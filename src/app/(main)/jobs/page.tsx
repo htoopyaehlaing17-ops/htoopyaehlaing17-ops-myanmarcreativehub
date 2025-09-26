@@ -25,7 +25,7 @@ export default function JobsPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl lg:text-4xl font-bold mb-4 font-headline text-foreground">
+        <h1 className="text-3xl lg:text-4xl font-bold mb-2 font-headline text-foreground">
           {sectionContent.title}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
