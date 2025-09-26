@@ -55,7 +55,7 @@ export default function JobsPage() {
                <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row justify-between">
                     <div>
-                        <Link href="#">
+                        <Link href={`/jobs/${job.id}`}>
                             <h3 className="text-xl font-bold text-foreground hover:text-primary transition-colors">{job.title}</h3>
                         </Link>
                         <p className="text-sm text-muted-foreground mt-1">Posted by a client</p>
@@ -99,7 +99,7 @@ export default function JobsPage() {
                    </div>
                    <div className="mt-2 sm:mt-0">
                         <Button asChild>
-                            <Link href="#">View & Apply</Link>
+                            <Link href={`/jobs/${job.id}`}>View & Apply</Link>
                         </Button>
                    </div>
                 </div>
