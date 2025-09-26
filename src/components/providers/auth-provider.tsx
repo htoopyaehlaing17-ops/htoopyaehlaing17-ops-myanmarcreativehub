@@ -2,16 +2,18 @@
 
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useApp } from './app-provider';
-import type { User, Profile, Portfolio } from '@/lib/types';
-import { users, profiles, portfolios as initialPortfoliosData } from '@/lib/data';
+import type { User, Profile, Portfolio, Job } from '@/lib/types';
+import { users, profiles, portfolios as initialPortfoliosData, jobs as initialJobsData } from '@/lib/data';
 
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   portfolios: Portfolio[];
+  jobs: Job[];
   addPortfolio: (newPortfolio: Omit<Portfolio, 'id' | 'userId' | 'likes' | 'views'>) => void;
   updatePortfolio: (updatedPortfolio: Portfolio) => void;
   deletePortfolio: (portfolioId: number) => void;
+  addJob: (newJob: Omit<Job, 'id' | 'clientId'>) => void;
   updateProfile: (updatedProfile: Profile) => void;
   handleLogin: (email: string, password: string) => Promise<{ error?: string }>;
   handleSignup: (name: string, email: string, password: string) => Promise<{ error?: string }>;
@@ -30,6 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfoliosData);
+  const [jobs, setJobs] = useState<Job[]>(initialJobsData);
+
 
   useEffect(() => {
     // Mock checking for a logged-in user, e.g., from localStorage
@@ -123,17 +127,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         likes: 0,
         views: 0,
       };
-      setPortfolios(prev => [newPortfolio, ...prev]);
+      const updatedPortfolios = [newPortfolio, ...portfolios];
+      setPortfolios(updatedPortfolios);
       initialPortfoliosData.unshift(newPortfolio);
     }
   };
 
   const updatePortfolio = (updatedPortfolio: Portfolio) => {
-    setPortfolios(prev => prev.map(p => p.id === updatedPortfolio.id ? updatedPortfolio : p));
-    const index = initialPortfoliosData.findIndex(p => p.id === updatedPortfolio.id);
-    if (index !== -1) {
-      initialPortfoliosData[index] = updatedPortfolio;
-    }
+    setPortfolios(prev => {
+        const newPortfolios = prev.map(p => p.id === updatedPortfolio.id ? updatedPortfolio : p);
+        const index = initialPortfoliosData.findIndex(p => p.id === updatedPortfolio.id);
+        if (index !== -1) {
+            initialPortfoliosData[index] = updatedPortfolio;
+        }
+        return newPortfolios;
+    });
   };
 
   const deletePortfolio = (portfolioId: number) => {
@@ -141,6 +149,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const index = initialPortfoliosData.findIndex(p => p.id === portfolioId);
     if (index !== -1) {
       initialPortfoliosData.splice(index, 1);
+    }
+  };
+  
+  const addJob = (newJobData: Omit<Job, 'id' | 'clientId'>) => {
+    if(user) {
+        const newJob: Job = {
+            id: Date.now(),
+            clientId: user.id,
+            ...newJobData,
+        };
+        const updatedJobs = [newJob, ...jobs];
+        setJobs(updatedJobs);
+        initialJobsData.unshift(newJob);
     }
   };
 
@@ -167,9 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     profile,
     portfolios,
+    jobs,
     addPortfolio,
     updatePortfolio,
     deletePortfolio,
+    addJob,
     updateProfile,
     handleLogin,
     handleSignup,
@@ -189,5 +212,3 @@ export function useAuth() {
   }
   return context;
 }
-
-    

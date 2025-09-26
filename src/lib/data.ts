@@ -1,4 +1,4 @@
-import type { User, Profile, Portfolio } from './types';
+import type { User, Profile, Portfolio, Job } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 
 const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl || '';
@@ -82,4 +82,27 @@ export const portfolios: Portfolio[] = [
     views: 203,
     featured: false
   }
+];
+
+export const jobs: Job[] = [
+    {
+        id: 1,
+        clientId: 2,
+        title: "Looking for a logo designer for a new coffee shop",
+        description: "We are opening a new specialty coffee shop in downtown Yangon and need a talented designer to create a modern and memorable logo. The brand is focused on sustainability and community. We'd like to see a portfolio of previous branding work.",
+        category: "Graphic Design",
+        skills: ["Logo Design", "Branding", "Adobe Illustrator"],
+        budget: 500,
+        location: "Yangon, Myanmar (Remote)"
+    },
+    {
+        id: 2,
+        clientId: 1, 
+        title: "Website Redesign for a Local NGO",
+        description: "Our non-profit organization needs a complete website redesign. The current site is outdated and not mobile-friendly. We need a clean, professional, and easy-to-navigate website that clearly communicates our mission and impact. The freelancer should have experience with WordPress and creating websites for non-profits.",
+        category: "Web Design",
+        skills: ["UI/UX Design", "WordPress", "Responsive Design", "SEO"],
+        budget: 1200,
+        location: "Mandalay, Myanmar (Remote optional)"
+    }
 ];

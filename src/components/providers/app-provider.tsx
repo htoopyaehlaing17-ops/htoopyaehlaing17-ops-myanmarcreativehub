@@ -2,12 +2,13 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState } from 'react';
-import type { Portfolio } from '@/lib/types';
+import type { Portfolio, Job } from '@/lib/types';
 
-type ModalType = 'login' | 'signup' | 'uploadPortfolio' | 'editProfile' | null;
+type ModalType = 'login' | 'signup' | 'uploadPortfolio' | 'editProfile' | 'createJob' | null;
 
 interface ModalData {
     portfolio?: Portfolio;
+    job?: Job;
 }
 
 interface AppContextType {

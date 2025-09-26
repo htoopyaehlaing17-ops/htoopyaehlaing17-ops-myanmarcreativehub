@@ -33,4 +33,13 @@ export interface Profile {
   avatar: string | null;
 }
 
-    
+export interface Job {
+    id: number;
+    clientId: number;
+    title: string;
+    description: string;
+    category: string;
+    skills: string[];
+    budget: number;
+    location: string;
+}
