@@ -9,9 +9,10 @@ import { Eye, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import type { Portfolio } from '@/lib/types';
 
 export default function PortfolioPage() {
-    const { portfolios } = useAuth();
+    const { portfolios, updatePortfolio } = useAuth();
     const { toast } = useToast();
     const publicPortfolios = portfolios.filter(p => p.isPublic);
     const [likedPortfolios, setLikedPortfolios] = useState<Set<number>>(new Set());
@@ -21,16 +22,24 @@ export default function PortfolioPage() {
         description: 'Explore creative work from our talented community.',
     };
 
-    const handleLikeClick = (portfolioId: number) => {
+    const handleLikeClick = (portfolio: Portfolio) => {
+        const portfolioId = portfolio.id;
+        const isLiked = likedPortfolios.has(portfolioId);
+        
+        let updatedPortfolio: Portfolio;
+
         setLikedPortfolios(prev => {
             const newLiked = new Set(prev);
             if (newLiked.has(portfolioId)) {
                 newLiked.delete(portfolioId);
                 toast({ title: 'Unliked', description: 'Project removed from your likes.' });
+                updatedPortfolio = { ...portfolio, likes: portfolio.likes - 1 };
             } else {
                 newLiked.add(portfolioId);
                 toast({ title: 'Liked!', description: 'Project added to your likes.' });
+                updatedPortfolio = { ...portfolio, likes: portfolio.likes + 1 };
             }
+            updatePortfolio(updatedPortfolio);
             return newLiked;
         });
     };
@@ -65,14 +74,17 @@ export default function PortfolioPage() {
                                     <p className="text-muted-foreground text-sm mb-3 h-10 overflow-hidden">{p.description}</p>
                                     <div className="flex justify-between items-center pt-3 border-t">
                                          <Badge variant="outline">{p.category}</Badge>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className={cn("text-muted-foreground hover:text-destructive", isLiked && "text-destructive")}
-                                            onClick={() => handleLikeClick(p.id)}
-                                        >
-                                            <Heart className={cn("w-5 h-5", isLiked && "fill-current")} />
-                                        </Button>
+                                        <div className="flex items-center gap-1 text-muted-foreground">
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className={cn("text-muted-foreground hover:text-destructive h-8 w-8", isLiked && "text-destructive")}
+                                                onClick={() => handleLikeClick(p)}
+                                            >
+                                                <Heart className={cn("w-5 h-5", isLiked && "fill-current")} />
+                                            </Button>
+                                            <span className="text-sm font-medium">{p.likes}</span>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
