@@ -26,17 +26,17 @@ export default function Sidebar() {
     <>
       <aside
         className={cn(
-          'sidebar fixed top-0 left-0 h-full w-64 bg-gray-900 shadow-lg z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-gray-800',
+          'sidebar fixed top-0 left-0 h-full w-64 bg-card shadow-lg z-50 transform transition-transform duration-300 ease-in-out border-r',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-700 h-16">
-            <div className="text-lg font-semibold font-headline">Myanmar Creative Hub</div>
+          <div className="flex items-center justify-between p-4 border-b h-16">
+            <div className="text-lg font-semibold font-headline text-foreground">Myanmar Creative Hub</div>
             <Button
               variant="ghost"
               size="icon"
-              className="p-2 rounded-md hover:bg-gray-800 transition-colors duration-200 lg:hidden"
+              className="p-2 rounded-md hover:bg-muted transition-colors duration-200 lg:hidden"
               onClick={closeSidebar}
               aria-label="Close menu"
             >
@@ -56,8 +56,8 @@ export default function Sidebar() {
                       className={cn(
                         'w-full flex items-center space-x-3 p-3 rounded-lg transition-colors duration-200 group',
                         isActive
-                          ? 'bg-primary/20 text-primary-foreground'
-                          : 'hover:bg-primary/10 text-gray-300 hover:text-white',
+                          ? 'bg-primary/20 text-primary'
+                          : 'hover:bg-muted text-muted-foreground hover:text-foreground',
                         item.auth && !user && 'cursor-pointer'
                       )}
                     >
@@ -66,7 +66,7 @@ export default function Sidebar() {
                           'w-5 h-5',
                           isActive
                             ? 'text-primary'
-                            : 'text-gray-400 group-hover:text-white'
+                            : 'text-muted-foreground group-hover:text-foreground'
                         )}
                       />
                       <span className="font-medium">{item.name}</span>
@@ -78,7 +78,7 @@ export default function Sidebar() {
           </nav>
 
           {!user && (
-            <div className="p-4 border-t border-gray-700 space-y-2">
+            <div className="p-4 border-t space-y-2">
               <Button
                 onClick={() => {
                   openLogin();

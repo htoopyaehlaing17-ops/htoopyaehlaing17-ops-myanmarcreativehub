@@ -4,25 +4,33 @@ import { LogIn, UserPlus, Menu, LogOut } from 'lucide-react';
 import { useApp } from '@/components/providers/app-provider';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
-  const { toggleSidebar } = useApp();
+  const { toggleSidebar, isSidebarOpen } = useApp();
   const { user, handleLogout, openLogin, openSignup } = useAuth();
+  const pathname = usePathname();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700">
+    <header
+      className={cn(
+        'fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-sm border-b transition-all duration-300 ease-in-out',
+        isSidebarOpen ? 'lg:left-64' : 'left-0'
+      )}
+    >
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
-            className="menu-button p-2 rounded-md hover:bg-gray-800 transition-colors duration-200 lg:hidden"
+            className="menu-button p-2 rounded-md hover:bg-muted transition-colors duration-200"
             onClick={toggleSidebar}
             aria-label="Toggle menu"
           >
             <Menu className="w-6 h-6" />
           </Button>
-          <div className="text-lg font-semibold font-headline">
+          <div className="text-lg font-semibold font-headline text-foreground">
             Myanmar Creative Hub
           </div>
         </div>
