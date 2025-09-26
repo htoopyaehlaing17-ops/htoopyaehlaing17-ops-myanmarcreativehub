@@ -1,7 +1,37 @@
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
+# Specifies the version of the App Hosting configuration schema.
+version: 1
+
+# Defines the configuration for the App Hosting backend.
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 1
+  # The command used to start the production server.
+  # This command is executed after the build step.
+  command: npm run start
+
+# Defines the build configuration for the App Hosting backend.
+buildConfig:
+  # The command used to build the application for production.
+  command: npm run build
+
+# Defines the Continuous Deployment (CD) integration with a GitHub repository.
+# This section enables automatic builds and deployments when code is pushed to the specified repository.
+github:
+  # The name of the repository in the format "owner/repository-name".
+  # Replace with your GitHub username and repository name.
+  # For example: "github-username/my-awesome-app"
+  repository: ""
+
+  # The branch of the repository that triggers deployments.
+  # Pushing changes to this branch will start a new build and deployment.
+  liveBranch: main
+
+# Specifies the environment variables to be set for the backend.
+# These variables are accessible during both build and runtime.
+env:
+  - variable: NEXT_PUBLIC_GEMINI_API_KEY
+    # The availability option controls how the variable is exposed.
+    # "BUILD_AND_RUNTIME" makes it available during both the build process and at runtime.
+    availability:
+      - BUILD_AND_RUNTIME
