@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/components/providers/auth-provider';
+import { useApp } from '@/components/providers/app-provider';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import Image from 'next/image';
 
 export default function ProfilePage() {
   const { user, profile, portfolios, openLogin } = useAuth();
+  const { openModal } = useApp();
   
   useEffect(() => {
     if (!user) {
@@ -35,6 +37,10 @@ export default function ProfilePage() {
   }
   
   const userPortfolios = portfolios.filter(p => p.userId === user.id);
+
+  const handleNewProject = () => {
+    openModal('uploadPortfolio');
+  };
 
   return (
     <div className="space-y-6">
@@ -100,7 +106,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>My Projects</CardTitle>
-          <Button><Plus className="w-4 h-4 mr-2" />New Project</Button>
+          <Button onClick={handleNewProject}><Plus className="w-4 h-4 mr-2" />New Project</Button>
         </CardHeader>
         <CardContent>
           {userPortfolios.length > 0 ? (
@@ -136,7 +142,7 @@ export default function ProfilePage() {
               <Grid3X3 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-foreground mb-2">No projects yet</h3>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">Start showcasing your creative work by creating your first project.</p>
-              <Button><Plus className="w-5 h-5 mr-2" />Create Your First Project</Button>
+              <Button onClick={handleNewProject}><Plus className="w-5 h-5 mr-2" />Create Your First Project</Button>
             </div>
           )}
         </CardContent>
