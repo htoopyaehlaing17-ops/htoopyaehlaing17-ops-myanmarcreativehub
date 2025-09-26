@@ -47,7 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } else {
         const guestProfile = profiles.find(p => p.userId === 1);
-        setProfile(guestProfile || null);
+        if (guestProfile) {
+          setProfile(guestProfile);
+        }
     }
   }, []);
 
@@ -114,7 +116,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleLogout = () => {
     setUser(null);
     const guestProfile = profiles.find(p => p.userId === 1);
-    setProfile(guestProfile || null);
+    if (guestProfile) {
+        setProfile(guestProfile);
+    }
     localStorage.removeItem('loggedInUser');
   };
 

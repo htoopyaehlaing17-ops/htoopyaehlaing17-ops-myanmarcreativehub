@@ -11,9 +11,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, CalendarIcon } from 'lucide-react';
 import { PORTFOLIO_CATEGORIES } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
+import { cn } from '@/lib/utils';
+
 
 const jobSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters long'),
@@ -23,6 +29,7 @@ const jobSchema = z.object({
   budget: z.coerce.number().min(1, 'Budget must be greater than 0'),
   location: z.string().min(3, 'Location is required'),
   notes: z.string().optional(),
+  deadline: z.object({ from: z.date(), to: z.date() }).optional(),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -55,6 +62,7 @@ export default function CreateJobModal() {
   });
 
   const skillsValue = watch('skills');
+  const deadlineValue = watch('deadline');
 
   const handleClose = () => {
     reset();
@@ -172,15 +180,63 @@ export default function CreateJobModal() {
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Controller
-                  name="location"
-                  control={control}
-                  render={({ field }) => <Input id="location" placeholder="e.g., Yangon, Myanmar (Remote)" {...field} />}
-                />
-                {errors.location && <p className="text-sm text-destructive">{errors.location.message}</p>}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Controller
+                    name="location"
+                    control={control}
+                    render={({ field }) => <Input id="location" placeholder="e.g., Yangon, Myanmar (Remote)" {...field} />}
+                    />
+                    {errors.location && <p className="text-sm text-destructive">{errors.location.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="deadline">Application Deadline (Optional)</Label>
+                    <Controller
+                      name="deadline"
+                      control={control}
+                      render={({ field }) => (
+                         <Popover>
+                            <PopoverTrigger asChild>
+                            <Button
+                                id="date"
+                                variant={"outline"}
+                                className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                                )}
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value?.from ? (
+                                    field.value.to ? (
+                                        <>
+                                        {format(field.value.from, "LLL dd, y")} -{" "}
+                                        {format(field.value.to, "LLL dd, y")}
+                                        </>
+                                    ) : (
+                                        format(field.value.from, "LLL dd, y")
+                                    )
+                                ) : (
+                                    <span>Pick a date range</span>
+                                )}
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    initialFocus
+                                    mode="range"
+                                    defaultMonth={field.value?.from}
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    numberOfMonths={2}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                      )}
+                    />
+                </div>
               </div>
+
 
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes (Optional)</Label>

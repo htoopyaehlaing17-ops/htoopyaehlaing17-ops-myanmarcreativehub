@@ -5,9 +5,10 @@ import { useApp } from '@/components/providers/app-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, Plus, MapPin, DollarSign, FileText } from 'lucide-react';
+import { Briefcase, Plus, MapPin, DollarSign, FileText, CalendarClock } from 'lucide-react';
 import type { Job } from '@/lib/types';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 export default function JobsPage() {
   const { user, jobs } = useAuth();
@@ -32,9 +33,11 @@ export default function JobsPage() {
           {sectionContent.description}
         </p>
       </div>
-       <p className="text-sm text-muted-foreground -mt-4">
+      <div className="text-left">
+       <p className="text-sm text-muted-foreground">
           Currently {jobs.length} job opportunities available.
         </p>
+      </div>
 
       {user && (
         <div className="text-center">
@@ -82,9 +85,17 @@ export default function JobsPage() {
                 )}
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-muted-foreground border-t pt-4">
-                   <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
-                        <span>{job.location}</span>
+                   <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
+                        <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            <span>{job.location}</span>
+                        </div>
+                        {job.deadline && (
+                             <div className="flex items-center gap-2">
+                                <CalendarClock className="w-4 h-4" />
+                                <span>Apply by {format(job.deadline.to, "LLL dd, y")}</span>
+                            </div>
+                        )}
                    </div>
                    <div className="mt-2 sm:mt-0">
                         <Button asChild>

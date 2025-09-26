@@ -62,7 +62,7 @@ export const portfolios: Portfolio[] = [
     category: "Branding",
     isPublic: true,
     likes: 24,
-    views: 156,
+    views: 157,
     featured: true
   },
   {
@@ -94,7 +94,8 @@ export const jobs: Job[] = [
         skills: ["Logo Design", "Branding", "Adobe Illustrator"],
         budget: 500,
         location: "Yangon, Myanmar (Remote)",
-        notes: "Please include a link to your Behance or Dribbble profile in your application."
+        notes: "Please include a link to your Behance or Dribbble profile in your application.",
+        deadline: { from: new Date(), to: new Date(new Date().setDate(new Date().getDate() + 14)) }
     },
     {
         id: 2,
@@ -105,6 +106,7 @@ export const jobs: Job[] = [
         skills: ["UI/UX Design", "WordPress", "Responsive Design", "SEO"],
         budget: 1200,
         location: "Mandalay, Myanmar (Remote optional)",
-        notes: "The project has a deadline of 3 months. We are looking for someone who can start immediately."
+        notes: "The project has a deadline of 3 months. We are looking for someone who can start immediately.",
+        deadline: { from: new Date(), to: new Date(new Date().setMonth(new Date().getMonth() + 1)) }
     }
 ];
