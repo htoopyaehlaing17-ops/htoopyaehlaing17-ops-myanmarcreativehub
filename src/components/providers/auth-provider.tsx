@@ -1,12 +1,12 @@
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useApp } from './app-provider';
 import type { User, Profile, Portfolio, Job } from '@/lib/types';
 import { users as initialUsers, profiles as initialProfiles, portfolios as initialPortfoliosData, jobs as initialJobsData } from '@/lib/data';
-import { app, auth } from '@/lib/firebase'; // Ensure app is imported
+import { app } from '@/lib/firebase';
 import { 
+  getAuth,
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Reference the app to ensure it's initialized before using auth
-    const firebaseApp = app; 
+    const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const appUser = mapFirebaseUserToAppUser(firebaseUser);
@@ -115,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleLogin = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
+      const auth = getAuth(app);
       await signInWithEmailAndPassword(auth, email, password);
       closeModal();
       return {};
@@ -125,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSignup = async (name: string, email: string, password: string): Promise<{ error?: string }> => {
      try {
+      const auth = getAuth(app);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateFirebaseProfile(userCredential.user, { displayName: name });
       
@@ -139,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const handleGoogleLogin = async () => {
+    const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -153,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const handleLogout = async () => {
+    const auth = getAuth(app);
     await signOut(auth);
   };
 
@@ -219,7 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             users[userIndex].avatar = updatedProfile.avatar;
           }
       }
-
+      const auth = getAuth(app);
       if (auth.currentUser && auth.currentUser.displayName !== updatedProfile.name) {
           updateFirebaseProfile(auth.currentUser, { displayName: updatedProfile.name, photoURL: updatedProfile.avatar });
       }
