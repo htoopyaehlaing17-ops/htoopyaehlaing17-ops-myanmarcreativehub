@@ -42,4 +42,5 @@ export interface Job {
     skills: string[];
     budget: number;
     location: string;
+    notes?: string;
 }

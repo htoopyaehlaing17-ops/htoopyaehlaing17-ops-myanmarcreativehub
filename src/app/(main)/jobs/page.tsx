@@ -5,7 +5,7 @@ import { useApp } from '@/components/providers/app-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, Plus, MapPin, DollarSign } from 'lucide-react';
+import { Briefcase, Plus, MapPin, DollarSign, FileText } from 'lucide-react';
 import type { Job } from '@/lib/types';
 import Link from 'next/link';
 
@@ -66,6 +66,18 @@ export default function JobsPage() {
                     {job.skills.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
                 </div>
 
+                {job.notes && (
+                  <Card className="bg-muted/50 border-dashed mb-4">
+                    <CardHeader className="flex-row items-center gap-3 space-y-0 p-4">
+                      <FileText className="w-5 h-5 text-muted-foreground" />
+                      <CardTitle className="text-base font-semibold">Additional Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <p className="text-sm text-muted-foreground">{job.notes}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-muted-foreground border-t pt-4">
                    <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4" />
@@ -82,7 +94,7 @@ export default function JobsPage() {
           ))}
         </div>
       ) : (
-        <Card className="max-w-3xl mx-auto">
+        <Card>
           <CardContent className="p-10 text-center">
             <Briefcase className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <p className="text-card-foreground">

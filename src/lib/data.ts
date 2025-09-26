@@ -93,7 +93,8 @@ export const jobs: Job[] = [
         category: "Graphic Design",
         skills: ["Logo Design", "Branding", "Adobe Illustrator"],
         budget: 500,
-        location: "Yangon, Myanmar (Remote)"
+        location: "Yangon, Myanmar (Remote)",
+        notes: "Please include a link to your Behance or Dribbble profile in your application."
     },
     {
         id: 2,
@@ -103,6 +104,7 @@ export const jobs: Job[] = [
         category: "Web Design",
         skills: ["UI/UX Design", "WordPress", "Responsive Design", "SEO"],
         budget: 1200,
-        location: "Mandalay, Myanmar (Remote optional)"
+        location: "Mandalay, Myanmar (Remote optional)",
+        notes: "The project has a deadline of 3 months. We are looking for someone who can start immediately."
     }
 ];

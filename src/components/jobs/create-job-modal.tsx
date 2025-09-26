@@ -22,6 +22,7 @@ const jobSchema = z.object({
   skills: z.array(z.string()).min(1, 'Please add at least one skill'),
   budget: z.coerce.number().min(1, 'Budget must be greater than 0'),
   location: z.string().min(3, 'Location is required'),
+  notes: z.string().optional(),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -49,6 +50,7 @@ export default function CreateJobModal() {
       skills: [],
       budget: 0,
       location: '',
+      notes: '',
     },
   });
 
@@ -178,6 +180,15 @@ export default function CreateJobModal() {
                   render={({ field }) => <Input id="location" placeholder="e.g., Yangon, Myanmar (Remote)" {...field} />}
                 />
                 {errors.location && <p className="text-sm text-destructive">{errors.location.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Controller
+                  name="notes"
+                  control={control}
+                  render={({ field }) => <Textarea id="notes" placeholder="Add any additional notes or requirements for this job..." {...field} rows={3} />}
+                />
               </div>
             </div>
             
