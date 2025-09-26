@@ -4,9 +4,8 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import { useApp } from './app-provider';
 import type { User, Profile, Portfolio, Job } from '@/lib/types';
 import { users as initialUsers, profiles as initialProfiles, portfolios as initialPortfoliosData, jobs as initialJobsData } from '@/lib/data';
-import { app } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { 
-  getAuth,
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
@@ -39,9 +38,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 let users: User[] = [...initialUsers];
 let profiles: Profile[] = [...initialProfiles];
-
-// Initialize Firebase Auth directly. This ensures it's ready when needed.
-const auth = getAuth(app);
 
 const mapFirebaseUserToAppUser = (firebaseUser: FirebaseUser): User => {
   let appUser = users.find(u => u.email === firebaseUser.email);
