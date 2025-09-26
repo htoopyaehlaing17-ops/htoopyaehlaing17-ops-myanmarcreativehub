@@ -106,11 +106,11 @@ export default function ProfilePage() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div className="relative">
-              <Avatar className="w-24 h-24">
+              <Avatar className="w-24 h-24 border-2 border-background">
                 <AvatarImage src={profile.avatar || undefined} alt={profile.name} />
                 <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <Button size="icon" className="absolute bottom-0 right-0 h-8 w-8">
+              <Button size="icon" className="absolute bottom-0 right-0 h-8 w-8 rounded-full">
                 <Edit3 className="w-4 h-4" />
               </Button>
             </div>
@@ -258,5 +258,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
