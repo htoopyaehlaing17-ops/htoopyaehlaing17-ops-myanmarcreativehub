@@ -43,7 +43,7 @@ export default function JobsPage() {
       )}
 
       {jobs.length > 0 ? (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="space-y-6">
           {jobs.map((job) => (
             <Card key={job.id} className="hover:shadow-lg transition-shadow">
                <CardContent className="p-6">
