@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Portfolio } from '@/lib/types';
 
 export default function PortfolioPage() {
-    const { portfolios, updatePortfolio } = useAuth();
+    const { user, portfolios, updatePortfolio } = useAuth();
     const { toast } = useToast();
     const publicPortfolios = portfolios.filter(p => p.isPublic).sort((a, b) => b.likes - a.likes);
     const [likedPortfolios, setLikedPortfolios] = useState<Set<number>>(new Set());
@@ -22,7 +22,12 @@ export default function PortfolioPage() {
         description: 'Explore creative work from our talented community.',
     };
 
-    const handleLikeClick = (portfolio: Portfolio) => {
+    const handleLikeClick = (e: React.MouseEvent, portfolio: Portfolio) => {
+        e.stopPropagation(); // Prevent card click event from firing
+        if (!user) {
+            toast({ title: 'Login Required', description: 'Please login to like projects.' });
+            return;
+        }
         const portfolioId = portfolio.id;
         const isLiked = likedPortfolios.has(portfolioId);
         
@@ -44,6 +49,16 @@ export default function PortfolioPage() {
         });
     };
 
+    const handleCardClick = (portfolio: Portfolio) => {
+        // We only increment views if another user is viewing it.
+        if (user?.id !== portfolio.userId) {
+            const updatedPortfolio = { ...portfolio, views: portfolio.views + 1 };
+            updatePortfolio(updatedPortfolio);
+        }
+        // In a real app, you would navigate to the project details page here.
+        console.log(`Card for "${portfolio.title}" clicked. Current views: ${portfolio.views + 1}`);
+    };
+
     return (
         <div className="space-y-8">
             <div className="text-center">
@@ -56,7 +71,11 @@ export default function PortfolioPage() {
                     {publicPortfolios.map((p) => {
                         const isLiked = likedPortfolios.has(p.id);
                         return (
-                            <Card key={p.id} className="overflow-hidden group">
+                            <Card 
+                                key={p.id} 
+                                className="overflow-hidden group cursor-pointer"
+                                onClick={() => handleCardClick(p)}
+                            >
                                 <div className="relative">
                                     <Image src={p.coverImage} alt={p.title} width={600} height={400} className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105" />
                                     <div className="absolute top-3 right-3 flex items-center gap-2">
@@ -79,7 +98,7 @@ export default function PortfolioPage() {
                                                 variant="ghost" 
                                                 size="icon" 
                                                 className={cn("text-muted-foreground hover:text-destructive h-8 w-8", isLiked && "text-destructive")}
-                                                onClick={() => handleLikeClick(p)}
+                                                onClick={(e) => handleLikeClick(e, p)}
                                             >
                                                 <Heart className={cn("w-5 h-5", isLiked && "fill-current")} />
                                             </Button>
