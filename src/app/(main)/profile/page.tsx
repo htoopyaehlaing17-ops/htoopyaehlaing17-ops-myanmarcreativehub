@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Edit3, Mail, Phone, MapPin, Calendar, Plus, Grid3X3, LogIn, Eye, Trash2, Globe, Lock, Heart, User, Save, X, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -20,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { Portfolio } from '@/lib/types';
+import type { Portfolio, Profile } from '@/lib/types';
 
 
 export default function ProfilePage() {
@@ -30,6 +31,8 @@ export default function ProfilePage() {
 
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [editedBio, setEditedBio] = useState(profile?.bio || '');
+  const [isEditingPersonalInfo, setIsEditingPersonalInfo] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<Profile | null>(profile);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [portfolioToDelete, setPortfolioToDelete] = useState<Portfolio | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +47,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setEditedBio(profile.bio);
+      setEditedProfile(profile);
     }
   }, [profile]);
 
@@ -101,6 +105,25 @@ export default function ProfilePage() {
     setIsEditingBio(false);
   }
 
+  const handleSavePersonalInfo = () => {
+    if (editedProfile) {
+      updateProfile(editedProfile);
+      setIsEditingPersonalInfo(false);
+      toast({ title: 'Success', description: 'Your personal information has been updated.' });
+    }
+  };
+
+  const handleCancelEditPersonalInfo = () => {
+    setEditedProfile(profile);
+    setIsEditingPersonalInfo(false);
+  };
+
+  const handlePersonalInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (editedProfile) {
+      setEditedProfile({ ...editedProfile, [e.target.name]: e.target.value });
+    }
+  };
+
   const handleAvatarEditClick = () => {
     avatarInputRef.current?.click();
   };
@@ -156,14 +179,35 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Personal Information</CardTitle>
+            {!isEditingPersonalInfo && (
+              <Button variant="ghost" size="icon" onClick={() => setIsEditingPersonalInfo(true)}>
+                <Edit3 className="w-4 h-4" />
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-3"><Mail className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">{profile.email}</span></div>
-            <div className="flex items-center gap-3"><Phone className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">{profile.phone || 'Not provided'}</span></div>
-            <div className="flex items-center gap-3"><MapPin className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">{profile.location || 'Not provided'}</span></div>
-            <div className="flex items-center gap-3"><Calendar className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">Member since {profile.memberSince}</span></div>
+            {isEditingPersonalInfo && editedProfile ? (
+              <div className="space-y-4">
+                <Input name="name" value={editedProfile.name} onChange={handlePersonalInfoChange} placeholder="Full Name" />
+                <Input name="title" value={editedProfile.title} onChange={handlePersonalInfoChange} placeholder="Title (e.g. UI/UX Designer)" />
+                <Input name="email" type="email" value={editedProfile.email} onChange={handlePersonalInfoChange} placeholder="Email" />
+                <Input name="phone" value={editedProfile.phone} onChange={handlePersonalInfoChange} placeholder="Phone Number" />
+                <Input name="location" value={editedProfile.location} onChange={handlePersonalInfoChange} placeholder="Location" />
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" onClick={handleCancelEditPersonalInfo}><X className="w-4 h-4 mr-2" />Cancel</Button>
+                  <Button onClick={handleSavePersonalInfo}><Save className="w-4 h-4 mr-2" />Save</Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3"><Mail className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">{profile.email}</span></div>
+                <div className="flex items-center gap-3"><Phone className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">{profile.phone || 'Not provided'}</span></div>
+                <div className="flex items-center gap-3"><MapPin className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">{profile.location || 'Not provided'}</span></div>
+                <div className="flex items-center gap-3"><Calendar className="w-5 h-5 text-muted-foreground" /><span className="text-foreground">Member since {profile.memberSince}</span></div>
+              </>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -283,5 +327,7 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
 
     
