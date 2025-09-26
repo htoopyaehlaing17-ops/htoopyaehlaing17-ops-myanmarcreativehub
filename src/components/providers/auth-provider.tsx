@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import { useApp } from './app-provider';
 import type { User, Profile, Portfolio, Job } from '@/lib/types';
 import { users as initialUsers, profiles as initialProfiles, portfolios as initialPortfoliosData, jobs as initialJobsData } from '@/lib/data';
-import { auth } from '@/lib/firebase';
+import { app, auth } from '@/lib/firebase'; // Ensure app is imported
 import { 
   onAuthStateChanged,
   GoogleAuthProvider,
@@ -95,6 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   useEffect(() => {
+    // Reference the app to ensure it's initialized before using auth
+    const firebaseApp = app; 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const appUser = mapFirebaseUserToAppUser(firebaseUser);
@@ -142,7 +144,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithPopup(auth, provider);
       closeModal();
     } catch (error: any) {
-      console.error("Google login error:", error.message);
+      console.error("Google login error:", error);
+      if (error.code === 'auth/popup-closed-by-user') {
+          return;
+      }
+      // You can add more specific error handling here if needed
     }
   };
 
