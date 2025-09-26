@@ -195,7 +195,6 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               {isEditingPersonalInfo && editedProfile ? (
                 <div className="space-y-4">
-                  <Input name="name" value={editedProfile.name} onChange={handlePersonalInfoChange} placeholder="Full Name" />
                   <Input name="title" value={editedProfile.title} onChange={handlePersonalInfoChange} placeholder="Title (e.g. UI/UX Designer)" />
                   <Input name="email" type="email" value={editedProfile.email} onChange={handlePersonalInfoChange} placeholder="Email" />
                   <Input name="phone" value={editedProfile.phone} onChange={handlePersonalInfoChange} placeholder="Phone Number" />
@@ -334,7 +333,3 @@ export default function ProfilePage() {
     </>
   );
 }
-
-    
-
-    
