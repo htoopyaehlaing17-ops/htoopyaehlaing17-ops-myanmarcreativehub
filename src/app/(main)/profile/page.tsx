@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Portfolio, Profile } from '@/lib/types';
-import EditSkillsModal from '@/components/profile/edit-skills-modal';
+import EditProfileModal from '@/components/profile/edit-profile-modal';
 
 
 export default function ProfilePage() {
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={() => openModal('editSkills')}>
+            <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={() => openModal('editProfile')}>
               <Edit3 className="w-4 h-4" />
             </Button>
           </CardContent>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-      <EditSkillsModal />
+      <EditProfileModal />
     </>
   );
 }
