@@ -24,6 +24,7 @@ const portfolioSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters long'),
   category: z.string().min(1, 'Please select a category'),
   coverImage: z.string().url('Please provide a valid cover image URL'),
+  images: z.string().optional(),
   isPublic: z.boolean().default(true),
   featured: z.boolean().default(false),
 });
@@ -50,6 +51,7 @@ export default function UploadPortfolioModal() {
       description: '',
       category: '',
       coverImage: '',
+      images: '',
       isPublic: true,
       featured: false,
     },
@@ -58,7 +60,8 @@ export default function UploadPortfolioModal() {
   const descriptionValue = watch('description');
 
   const onSubmit = (data: PortfolioFormData) => {
-    addPortfolio({ ...data, images: [] });
+    const images = data.images ? data.images.split(',').map(url => url.trim()).filter(url => url) : [];
+    addPortfolio({ ...data, images });
     toast({ title: 'Project Added!', description: 'Your new project has been added to your portfolio.' });
     closeModal();
   };
@@ -168,6 +171,17 @@ export default function UploadPortfolioModal() {
                     </div>
                   )}
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="images">Project Image URLs</Label>
+                <Controller
+                  name="images"
+                  control={control}
+                  render={({ field }) => <Textarea id="images" placeholder="Enter image URLs, separated by commas" {...field} rows={3} />}
+                />
+                 <p className="text-xs text-muted-foreground">Add multiple image URLs separated by commas.</p>
+              </div>
+
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
