@@ -31,10 +31,10 @@ export default function JobsPage() {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           {sectionContent.description}
         </p>
-        <p className="text-sm text-muted-foreground mt-2">
+      </div>
+       <p className="text-sm text-muted-foreground -mt-4">
           Currently {jobs.length} job opportunities available.
         </p>
-      </div>
 
       {user && (
         <div className="text-center">
